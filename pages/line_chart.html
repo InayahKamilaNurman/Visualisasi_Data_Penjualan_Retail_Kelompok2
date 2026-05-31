@@ -1,1 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Line Chart Tren Penjualan - Visualisasi Data Penjualan Retail</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a class="navbar-brand" href="../index.html">
+        <span class="brand-icon">VD</span>
+        <span>Visualisasi Data Retail</span>
+      </a>
+      <a class="navbar-back" href="../index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+        Kembali ke dashboard
+      </a>
+    </div>
+  </nav>
 
+  <header class="page-hero">
+    <span class="badge">Line Chart</span>
+    <h1>Tren Penjualan Berdasarkan Tahun Berdirinya Outlet</h1>
+    <p>Visualisasi ini menampilkan tren kontribusi total penjualan retail yang dikelompokkan berdasarkan tahun pendirian atau berdirinya outlet (1985 s.d. 2009).</p>
+  </header>
+
+  <main class="chart-container fade-in">
+    <div class="chart-header">
+      <h2>Tren Penjualan Tahunan Outlet</h2>
+      <p>Data diurutkan secara kronologis berdasarkan tahun berdirinya outlet untuk menganalisis performa historis.</p>
+    </div>
+
+    <div id="chart" class="chart-area"></div>
+    <div class="insight-box" id="insight-box">Memuat data...</div>
+  </main>
+
+  <div id="tooltip" class="tooltip"></div>
+
+  <footer class="footer">
+    <span>Kelompok 2</span> — Praktikum Visualisasi Data
+  </footer>
+
+  <script src="../js/line_chart.js"></script>
+</body>
+</html>
