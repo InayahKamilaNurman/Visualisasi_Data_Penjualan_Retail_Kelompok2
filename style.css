@@ -1,4 +1,4 @@
-/* Kelompok 2 - Visualisasi Data */
+/* Kelompok 2 - Visualisasi Data 2026 */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap');
 
@@ -342,10 +342,11 @@ a:hover {
   stroke: var(--border);
 }
 
+/* grid lebih halus */
 .grid line {
   stroke: var(--border);
   stroke-dasharray: 3,3;
-  stroke-opacity: 0.8;
+  stroke-opacity: 0.3;
 }
 
 .grid path {
@@ -472,7 +473,7 @@ a:hover {
   flex-shrink: 0;
 }
 
-/* kotak insight di bawah chart */
+/* insight di bawah chart */
 .insight-box {
   background: var(--primary-light);
   border-left: 4px solid var(--primary);
@@ -488,7 +489,7 @@ a:hover {
   font-weight: 600;
 }
 
-/* stats */
+/* stats — hanya untuk index.html, tidak untuk halaman chart individual */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -504,10 +505,11 @@ a:hover {
   text-align: center;
 }
 
+/* diubah dari --primary ke --text-primary */
 .stat-value {
   font-size: 1.4rem;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--text-primary);
   font-family: var(--font-mono);
   letter-spacing: -0.5px;
   line-height: 1.2;
@@ -556,7 +558,7 @@ a:hover {
   background: var(--primary-light);
 }
 
-/* toggle All / Top 5 */
+/* toggle */
 .btn-group {
   display: flex;
   gap: 4px;

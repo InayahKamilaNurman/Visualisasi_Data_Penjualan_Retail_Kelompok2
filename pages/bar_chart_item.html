@@ -26,28 +26,20 @@
 
   <!-- header -->
   <div class="page-hero fade-in">
-    <div class="badge">Task 1</div>
     <h1>Penjualan Berdasarkan Tipe Item</h1>
-    <p>Total penjualan dikelompokkan berdasarkan kategori produk. Gunakan toggle untuk melihat semua kategori atau hanya 5 teratas.</p>
+    <p>Total penjualan dikelompokkan berdasarkan kategori produk.</p>
   </div>
 
   <!-- chart -->
   <div class="chart-container fade-in">
 
-    <div class="chart-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-      <div>
-        <h2>Total Penjualan per Tipe Item</h2>
-        <p>Sumbu X: Tipe Item &nbsp;|&nbsp; Sumbu Y: Total Penjualan (IDR)</p>
-      </div>
-      <!-- toggle semua / top 5 -->
+    <!-- toggle diketengahkan -->
+    <div style="display:flex; justify-content:center; margin-bottom:20px;">
       <div class="btn-group">
         <button class="btn-toggle active" id="btn-all">Semua</button>
         <button class="btn-toggle" id="btn-top5">Top 5</button>
       </div>
     </div>
-
-    <!-- stats -->
-    <div class="stats-row" id="stats-row"></div>
 
     <!-- area chart -->
     <div id="chart"></div>
@@ -65,7 +57,7 @@
     Visualisasi Data Penjualan Retail &mdash; <span>Kelompok 2</span> &mdash; Informatika Unsyiah 2025
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="../js/bar_chart_item.js"></script>
 
 </body>

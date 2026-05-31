@@ -1,12 +1,6 @@
-const DATA_PATH = "../data/Dataset_Visdat_Cleaned.csv";
+// Kelompok 2 - bar chart tipe item
 
-// warna untuk tiap kategori
-const COLORS = [
-  "#1a56db","#f97316","#16a34a","#9333ea",
-  "#dc2626","#0891b2","#ca8a04","#db2777",
-  "#0ea5e9","#84cc16","#f59e0b","#6366f1",
-  "#14b8a6","#ef4444","#a855f7","#64748b"
-];
+const DATA_PATH = "../Data/Dataset_Visdat_Cleaned.csv";
 
 let showTop5 = false;
 let allData  = [];
@@ -29,34 +23,10 @@ d3.csv(DATA_PATH, d => ({
     .map(([type, total]) => ({ type, total }))
     .sort((a, b) => b.total - a.total);
 
-  // isi stats
-  const totalKeseluruhan = d3.sum(allData, d => d.total);
-  const itemTertinggi    = allData[0];
-  const itemTerendah     = allData[allData.length - 1];
-
-  document.getElementById("stats-row").innerHTML = `
-    <div class="stat-item">
-      <div class="stat-value">${allData.length}</div>
-      <div class="stat-label">Tipe Item</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-value">${formatRupiah(totalKeseluruhan)}</div>
-      <div class="stat-label">Total Penjualan</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-value">${itemTertinggi.type}</div>
-      <div class="stat-label">Penjualan Tertinggi</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-value">${itemTerendah.type}</div>
-      <div class="stat-label">Penjualan Terendah</div>
-    </div>
-  `;
-
   // render pertama kali
   renderChart(allData);
 
-  // toggle semua / top 5
+  // toggle semua
   document.getElementById("btn-all").addEventListener("click", () => {
     showTop5 = false;
     document.getElementById("btn-all").classList.add("active");
@@ -64,6 +34,7 @@ d3.csv(DATA_PATH, d => ({
     renderChart(allData);
   });
 
+  // toggle top 5
   document.getElementById("btn-top5").addEventListener("click", () => {
     showTop5 = true;
     document.getElementById("btn-top5").classList.add("active");
@@ -74,22 +45,22 @@ d3.csv(DATA_PATH, d => ({
 }).catch(err => {
   console.error("Gagal load data:", err);
   document.getElementById("chart").innerHTML =
-    `<p style="color:red;padding:20px">Gagal memuat data. Pastikan file CSV ada di folder data/.</p>`;
+    `<p style="color:red;padding:20px">Gagal memuat data. Pastikan file CSV ada di folder Data/.</p>`;
 });
 
 
-// render chart — dipanggil ulang setiap toggle berubah
+// render chart
 function renderChart(data) {
 
-  // hapus svg lama dulu
+  // hapus svg lama
   d3.select("#chart").selectAll("*").remove();
 
   // ukuran
   const container  = document.getElementById("chart");
   const totalWidth = container.clientWidth || 900;
-  const margin     = { top: 20, right: 30, bottom: 120, left: 80 };
+  const margin     = { top: 20, right: 30, bottom: showTop5 ? 60 : 120, left: 90 };
   const width      = totalWidth - margin.left - margin.right;
-  const height     = 380 - margin.top - margin.bottom;
+  const height     = 420 - margin.top - margin.bottom;
 
   // buat svg
   const svg = d3.select("#chart")
@@ -103,54 +74,49 @@ function renderChart(data) {
   const xScale = d3.scaleBand()
     .domain(data.map(d => d.type))
     .range([0, width])
-    .padding(0.3);
+    .padding(0.25);
 
   // skala y
   const yScale = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d.total) * 1.1])
+    .domain([0, d3.max(data, d => d.total) * 1.15])
     .range([height, 0]);
-
-  // skala warna
-  const colorScale = d3.scaleOrdinal()
-    .domain(data.map(d => d.type))
-    .range(COLORS);
 
   // grid horizontal
   svg.append("g")
     .attr("class", "grid")
     .call(
       d3.axisLeft(yScale)
+        .ticks(6)
         .tickSize(-width)
         .tickFormat("")
     );
 
-  // sumbu x
-  svg.append("g")
+  // sumbu x — miring kalau semua, lurus kalau top 5
+  const xAxisG = svg.append("g")
     .attr("class", "axis x-axis")
     .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(xScale))
-    .selectAll("text")
+    .call(d3.axisBottom(xScale));
+
+  if (showTop5) {
+    xAxisG.selectAll("text")
+      .style("font-size", "12px")
+      .style("text-anchor", "middle");
+  } else {
+    xAxisG.selectAll("text")
+      .style("font-size", "11px")
       .attr("transform", "rotate(-35)")
       .style("text-anchor", "end")
       .attr("dx", "-0.5em")
       .attr("dy", "0.5em");
+  }
 
-  // label sumbu x
-  svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", height + margin.bottom - 10)
-    .attr("text-anchor", "middle")
-    .attr("fill", "var(--text-secondary)")
-    .attr("font-size", "12px")
-    .attr("font-family", "var(--font-main)")
-    .text("Tipe Item");
-
-  // sumbu y
+  // sumbu y — pakai Miliar
   svg.append("g")
     .attr("class", "axis y-axis")
     .call(
       d3.axisLeft(yScale)
-        .tickFormat(d => formatSingkat(d))
+        .ticks(6)
+        .tickFormat(d => formatMiliar(d))
     );
 
   // label sumbu y
@@ -161,8 +127,9 @@ function renderChart(data) {
     .attr("text-anchor", "middle")
     .attr("fill", "var(--text-secondary)")
     .attr("font-size", "12px")
+    .attr("font-weight", "600")
     .attr("font-family", "var(--font-main)")
-    .text("Total Penjualan (IDR)");
+    .text("Total Penjualan (Miliar IDR)");
 
   const tooltip = d3.select("#tooltip");
 
@@ -176,24 +143,24 @@ function renderChart(data) {
     .attr("width", xScale.bandwidth())
     .attr("y", height)
     .attr("height", 0)
-    .attr("fill", d => colorScale(d.type))
+    .attr("fill", "var(--primary)")
     .attr("rx", 4)
-    // animasi tumbuh ke atas
     .transition()
-    .duration(600)
-    .delay((d, i) => i * 50)
+    .duration(800)
+    .ease(d3.easeCubicOut)
+    .delay((d, i) => i * 40)
     .attr("y", d => yScale(d.total))
     .attr("height", d => height - yScale(d.total));
 
-  // hover tooltip
+  // hover
   svg.selectAll(".bar")
     .on("mouseover", function(event, d) {
-      d3.select(this).attr("opacity", 0.8);
+      d3.select(this).attr("fill", "var(--primary-dark)");
       tooltip
         .classed("visible", true)
         .html(`
-          <div>${d.type}</div>
-          <div class="tooltip-value">${formatRupiah(d.total)}</div>
+          <div style="font-weight:600;margin-bottom:4px">${d.type}</div>
+          <div class="tooltip-value">${formatMiliar(d.total)} Miliar IDR</div>
         `);
     })
     .on("mousemove", function(event) {
@@ -202,31 +169,18 @@ function renderChart(data) {
         .style("top",  (event.pageY - 36) + "px");
     })
     .on("mouseout", function() {
-      d3.select(this).attr("opacity", 1);
+      d3.select(this).attr("fill", "var(--primary)");
       tooltip.classed("visible", false);
     });
 
-  // update insight
-  const top1 = data[0];
-  const top2 = data[1];
-  document.getElementById("insight-box").innerHTML = `
-    <strong>${top1.type}</strong> menjadi tipe item dengan total penjualan tertinggi
-    sebesar <strong>${formatRupiah(top1.total)}</strong>, diikuti oleh
-    <strong>${top2 ? top2.type : "-"}</strong>.
-    ${showTop5
-      ? "Ditampilkan 5 tipe item teratas dari 16 kategori."
-      : "Ditampilkan seluruh 16 kategori tipe item."}
-  `;
+  // insight
+  const top1 = allData[0];
+  document.getElementById("insight-box").innerHTML =
+    `${top1.type} adalah tipe item dengan penjualan tertinggi.`;
 }
 
-
-// format angka
-function formatRupiah(angka) {
-  return "Rp " + Math.round(angka).toLocaleString("id-ID");
-}
-
-function formatSingkat(angka) {
-  if (angka >= 1_000_000) return (angka / 1_000_000).toFixed(1) + "M";
-  if (angka >= 1_000)     return (angka / 1_000).toFixed(0) + "K";
-  return angka;
+// format miliar
+function formatMiliar(angka) {
+  if (angka === 0) return "0";
+  return (angka / 1_000_000_000).toFixed(1) + " M";
 }
