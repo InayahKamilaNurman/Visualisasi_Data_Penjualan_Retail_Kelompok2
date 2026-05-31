@@ -1,1 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bar Chart Outlet - Visualisasi Data Penjualan Retail</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a class="navbar-brand" href="../index.html">
+        <span class="brand-icon">VD</span>
+        <span>Visualisasi Data Retail</span>
+      </a>
+      <a class="navbar-back" href="../index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+        Kembali ke dashboard
+      </a>
+    </div>
+  </nav>
+
+  <header class="page-hero">
+    <span class="badge">Bar Chart</span>
+    <h1>Total Penjualan per Tipe Outlet</h1>
+    <p>Visualisasi ini menampilkan total penjualan berdasarkan tipe outlet untuk melihat tipe outlet dengan kontribusi penjualan paling besar.</p>
+  </header>
+
+  <main class="chart-container fade-in">
+    <div class="chart-header">
+      <h2>Bar Chart Total Penjualan per Tipe Outlet</h2>
+      <p>Data diurutkan dari total penjualan terbesar ke terkecil.</p>
+    </div>
+
+    <div class="stats-row" id="stats-row"></div>
+    <div id="chart" class="chart-area"></div>
+    <div id="insight-box" class="insight-box"></div>
+  </main>
+
+  <div id="tooltip" class="tooltip"></div>
+
+  <footer class="footer">
+    <span>Kelompok 2</span> — Praktikum Visualisasi Data
+  </footer>
+
+  <script src="../js/bar_chart_outlet.js"></script>
+</body>
+</html>
 
