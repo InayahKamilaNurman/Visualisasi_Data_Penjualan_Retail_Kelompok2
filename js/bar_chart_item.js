@@ -1,5 +1,3 @@
-// Kelompok 2 - bar chart tipe item
-
 const DATA_PATH = "../Data/Dataset_Visdat_Cleaned.csv";
 
 let showTop5 = false;
@@ -182,5 +180,6 @@ function renderChart(data) {
 // format miliar
 function formatMiliar(angka) {
   if (angka === 0) return "0";
-  return (angka / 1_000_000_000).toFixed(1) + " M";
+  const val = angka / 1_000_000_000;
+  return (Number.isInteger(val) ? val.toFixed(0) : val.toFixed(1)) + " M";
 }
