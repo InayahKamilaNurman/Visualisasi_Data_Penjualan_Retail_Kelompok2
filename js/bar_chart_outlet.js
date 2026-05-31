@@ -3,7 +3,7 @@ const DATA_PATHS = [
   "../data/Dataset_Visdat_Cleaned.csv"
 ];
 
-const COLORS = [
+const CATEGORY_COLORS = [
   getCssVar("--cat-1"),
   getCssVar("--cat-2"),
   getCssVar("--cat-3"),
@@ -14,100 +14,88 @@ const COLORS = [
   getCssVar("--cat-8")
 ];
 
-loadCsv(DATA_PATHS)
-  .then(data => {
-    const grouped = d3.rollups(
-      data,
-      v => d3.sum(v, d => d.Item_Outlet_Sales),
-      d => d.Outlet_Type
-    );
+loadCsv(DATA_PATHS).then(data => {
+  const grouped = d3.rollups(
+    data,
+    v => d3.sum(v, d => d.Item_Outlet_Sales),
+    d => d.Outlet_Type
+  );
 
-    const allData = grouped
-      .map(([type, total]) => ({ type, total }))
-      .sort((a, b) => b.total - a.total);
+  const chartData = grouped
+    .map(([type, total]) => ({ type, total }))
+    .sort((a, b) => b.total - a.total);
 
-    const totalKeseluruhan = d3.sum(allData, d => d.total);
-    const outletTertinggi = allData[0];
-    const outletTerendah = allData[allData.length - 1];
+  renderChart(chartData);
 
-    document.getElementById("stats-row").innerHTML = `
-      <div class="stat-item">
-        <div class="stat-value">${allData.length}</div>
-        <div class="stat-label">Tipe Outlet</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">${formatRupiah(totalKeseluruhan)}</div>
-        <div class="stat-label">Total Penjualan</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">${outletTertinggi.type}</div>
-        <div class="stat-label">Penjualan Tertinggi</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">${outletTerendah.type}</div>
-        <div class="stat-label">Penjualan Terendah</div>
-      </div>
-    `;
-
-    renderChart(allData);
-
-    document.getElementById("insight-box").innerHTML = `
-      <strong>${outletTertinggi.type}</strong> menjadi tipe outlet dengan total penjualan tertinggi sebesar <strong>${formatRupiah(outletTertinggi.total)}</strong>.
-    `;
-  })
-  .catch(err => {
-    console.error("Gagal load data:", err);
-    document.getElementById("chart").innerHTML = `
-      <div class="loading">
-        <div class="spinner"></div>
-        Gagal memuat data CSV.
-      </div>
-    `;
-  });
+  const top = chartData[0];
+  document.getElementById("insight-box").textContent =
+    `${top.type} adalah tipe outlet dengan total penjualan tertinggi.`;
+}).catch(err => {
+  console.error(err);
+  document.getElementById("chart").innerHTML = `
+    <div class="loading">
+      <div class="spinner"></div>
+      Gagal memuat data CSV.
+    </div>
+  `;
+});
 
 function renderChart(data) {
-  d3.select("#chart").selectAll("*").remove();
-
   const container = document.getElementById("chart");
-  const totalWidth = container.clientWidth || 900;
-  const margin = { top: 20, right: 30, bottom: 120, left: 90 };
-  const width = totalWidth - margin.left - margin.right;
+  container.innerHTML = "";
+
+  const margin = { top: 20, right: 30, bottom: 110, left: 105 };
+  const fullWidth = container.clientWidth || 900;
+  const width = fullWidth - margin.left - margin.right;
   const height = 420 - margin.top - margin.bottom;
 
-  const svg = d3.select("#chart")
+  const svg = d3.select(container)
     .append("svg")
-    .attr("width", totalWidth)
+    .attr("width", fullWidth)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  const xScale = d3.scaleBand()
+  const x = d3.scaleBand()
     .domain(data.map(d => d.type))
     .range([0, width])
     .padding(0.28);
 
-  const yScale = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d.total) * 1.1])
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(data, d => d.total) * 1.08])
     .nice()
     .range([height, 0]);
 
-  const colorScale = d3.scaleOrdinal()
+  const color = d3.scaleOrdinal()
     .domain(data.map(d => d.type))
-    .range(COLORS);
+    .range(CATEGORY_COLORS);
 
   svg.append("g")
     .attr("class", "grid")
-    .call(d3.axisLeft(yScale).tickSize(-width).tickFormat(""));
+    .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
 
   svg.append("g")
-    .attr("class", "axis x-axis")
+    .attr("class", "axis")
     .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(xScale))
+    .call(d3.axisBottom(x))
     .selectAll("text")
-    .attr("transform", "rotate(-25)")
+    .attr("transform", "rotate(-20)")
     .style("text-anchor", "end")
     .attr("dx", "-0.3em")
     .attr("dy", "0.5em");
+
+  svg.append("g")
+    .attr("class", "axis")
+    .call(d3.axisLeft(y).tickFormat(formatMiliar));
+
+  svg.append("text")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 22)
+    .attr("transform", "rotate(-90)")
+    .attr("text-anchor", "middle")
+    .attr("fill", "var(--text-secondary)")
+    .attr("font-size", "12px")
+    .text("Total Penjualan (Miliar IDR)");
 
   svg.append("text")
     .attr("x", width / 2)
@@ -115,22 +103,7 @@ function renderChart(data) {
     .attr("text-anchor", "middle")
     .attr("fill", "var(--text-secondary)")
     .attr("font-size", "12px")
-    .attr("font-family", "var(--font-main)")
     .text("Tipe Outlet");
-
-  svg.append("g")
-    .attr("class", "axis y-axis")
-    .call(d3.axisLeft(yScale).tickFormat(d => formatSingkat(d)));
-
-  svg.append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("x", -height / 2)
-    .attr("y", -margin.left + 18)
-    .attr("text-anchor", "middle")
-    .attr("fill", "var(--text-secondary)")
-    .attr("font-size", "12px")
-    .attr("font-family", "var(--font-main)")
-    .text("Total Penjualan (IDR)");
 
   const tooltip = d3.select("#tooltip");
 
@@ -139,78 +112,64 @@ function renderChart(data) {
     .enter()
     .append("rect")
     .attr("class", "bar")
-    .attr("x", d => xScale(d.type))
-    .attr("width", xScale.bandwidth())
-    .attr("y", height)
-    .attr("height", 0)
-    .attr("rx", 5)
-    .attr("fill", d => colorScale(d.type))
+    .attr("x", d => x(d.type))
+    .attr("y", d => y(d.total))
+    .attr("width", x.bandwidth())
+    .attr("height", d => height - y(d.total))
+    .attr("rx", 6)
+    .attr("fill", d => color(d.type))
     .on("mouseover", function (event, d) {
       d3.select(this).attr("opacity", 0.85);
       tooltip
         .classed("visible", true)
         .html(`
           <strong>${d.type}</strong><br />
-          ${formatRupiah(d.total)}
+          Total: ${formatMiliar(d.total)}
         `);
     })
     .on("mousemove", function (event) {
       tooltip
-        .style("left", (event.pageX + 14) + "px")
-        .style("top", (event.pageY - 36) + "px");
+        .style("left", `${event.pageX + 14}px`)
+        .style("top", `${event.pageY - 34}px`);
     })
     .on("mouseout", function () {
       d3.select(this).attr("opacity", 1);
       tooltip.classed("visible", false);
-    })
-    .transition()
-    .duration(700)
-    .delay((d, i) => i * 80)
-    .attr("y", d => yScale(d.total))
-    .attr("height", d => height - yScale(d.total));
+    });
 
   svg.selectAll(".bar-label")
     .data(data)
     .enter()
     .append("text")
     .attr("class", "bar-label")
-    .attr("x", d => xScale(d.type) + xScale.bandwidth() / 2)
-    .attr("y", d => yScale(d.total) - 8)
+    .attr("x", d => x(d.type) + x.bandwidth() / 2)
+    .attr("y", d => y(d.total) - 8)
     .attr("text-anchor", "middle")
     .attr("font-size", "11px")
-    .attr("font-family", "var(--font-mono)")
     .attr("fill", "var(--text-secondary)")
-    .text(d => formatSingkat(d.total));
+    .text(d => formatMiliar(d.total));
 }
 
 function loadCsv(paths) {
-  const converters = d => ({
-    Item_Outlet_Sales: +d.Item_Outlet_Sales,
-    Outlet_Type: d.Outlet_Type
+  const parse = d => ({
+    Outlet_Type: d.Outlet_Type,
+    Item_Outlet_Sales: +d.Item_Outlet_Sales
   });
 
-  const tryLoad = index => {
-    if (index >= paths.length) {
-      return Promise.reject(new Error("Semua path CSV gagal dimuat."));
-    }
-
-    return d3.csv(paths[index], converters).catch(() => tryLoad(index + 1));
+  const tryLoad = i => {
+    if (i >= paths.length) return Promise.reject(new Error("CSV tidak ditemukan"));
+    return d3.csv(paths[i], parse).catch(() => tryLoad(i + 1));
   };
 
   return tryLoad(0);
 }
 
-function formatRupiah(angka) {
-  return "Rp " + Math.round(angka).toLocaleString("id-ID");
-}
-
-function formatSingkat(angka) {
-  if (angka >= 1_000_000) return (angka / 1_000_000).toFixed(1) + "M";
-  if (angka >= 1_000) return (angka / 1_000).toFixed(0) + "K";
-  return angka.toLocaleString("id-ID");
+function formatMiliar(angka) {
+  if (angka === 0) return "0";
+  const val = angka / 1_000_000_000;
+  return (Number.isInteger(val) ? val.toFixed(0) : val.toFixed(1)) + " M";
 }
 
 function getCssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
-
