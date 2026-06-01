@@ -3,16 +3,7 @@ const DATA_PATHS = [
   "../data/Dataset_Visdat_Cleaned.csv"
 ];
 
-const CATEGORY_COLORS = [
-  getCssVar("--cat-1"),
-  getCssVar("--cat-2"),
-  getCssVar("--cat-3"),
-  getCssVar("--cat-4"),
-  getCssVar("--cat-5"),
-  getCssVar("--cat-6"),
-  getCssVar("--cat-7"),
-  getCssVar("--cat-8")
-];
+const COLORS = ["#1a56db", "#f97316", "#16a34a", "#9333ea", "#e11d48", "#0891b2"];
 
 loadCsv(DATA_PATHS).then(data => {
   const uniqueOutlets = Array.from(
@@ -33,52 +24,60 @@ loadCsv(DATA_PATHS).then(data => {
 
   renderChart(chartData);
 
+  const total = d3.sum(chartData, d => d.count);
+  const top = chartData[0];
+  const pct = Math.round((top.count / total) * 100);
   document.getElementById("insight-box").textContent =
-    "Supermarket Type1 memiliki jumlah outlet terbanyak dengan proporsi 60%.";
+    `${top.type} memiliki jumlah outlet terbanyak dengan proporsi ${pct}% dari total ${total} outlet.`;
+
 }).catch(err => {
   console.error(err);
-  document.getElementById("chart").innerHTML = `
-    <div class="loading">
-      <div class="spinner"></div>
-      Gagal memuat data CSV.
-    </div>
-  `;
+  document.getElementById("chart").innerHTML = `<div class="loading"><div class="spinner"></div>Gagal memuat data CSV.</div>`;
 });
 
 function renderChart(data) {
-  const container = document.getElementById("chart");
-  container.innerHTML = "";
+  const wrapper = document.getElementById("chart");
+  wrapper.innerHTML = "";
 
-  const width = container.clientWidth || 900;
-  const height = 420;
-  const radius = Math.min(width, height) / 2 - 24;
+  // Layout: pie kiri, legend kanan
+  wrapper.style.display = "flex";
+  wrapper.style.alignItems = "center";
+  wrapper.style.justifyContent = "center";
+  wrapper.style.gap = "32px";
+  wrapper.style.flexWrap = "wrap";
 
-  const svg = d3.select(container)
+  const svgContainer = document.createElement("div");
+  const legendContainer = document.createElement("div");
+  legendContainer.style.display = "flex";
+  legendContainer.style.flexDirection = "column";
+  legendContainer.style.gap = "10px";
+  legendContainer.style.minWidth = "180px";
+
+  wrapper.appendChild(svgContainer);
+  wrapper.appendChild(legendContainer);
+
+  const size = 340;
+  const radius = size / 2 - 16;
+
+  const svg = d3.select(svgContainer)
     .append("svg")
-    .attr("width", width)
-    .attr("height", height)
+    .attr("width", size)
+    .attr("height", size)
     .append("g")
-    .attr("transform", `translate(${width / 2},${height / 2})`);
+    .attr("transform", `translate(${size / 2},${size / 2})`);
 
   const color = d3.scaleOrdinal()
     .domain(data.map(d => d.type))
-    .range(CATEGORY_COLORS);
+    .range(COLORS);
 
-  const pie = d3.pie()
-    .sort(null)
-    .value(d => d.count);
+  const pie = d3.pie().sort(null).value(d => d.count);
 
-  const arc = d3.arc()
-    .innerRadius(0)
-    .outerRadius(radius);
+  const arc = d3.arc().innerRadius(0).outerRadius(radius);
+  const arcHover = d3.arc().innerRadius(0).outerRadius(radius + 8);
 
-  const labelArc = d3.arc()
-    .innerRadius(radius * 0.7)
-    .outerRadius(radius * 0.7);
-
-  const tooltip = d3.select("#tooltip");
   const total = d3.sum(data, d => d.count);
   const pieData = pie(data);
+  const tooltip = d3.select("#tooltip");
 
   svg.selectAll(".arc")
     .data(pieData)
@@ -86,53 +85,68 @@ function renderChart(data) {
     .append("path")
     .attr("class", "arc")
     .attr("d", arc)
-    .attr("fill", d => color(d.data.type))
+    .style("fill", d => color(d.data.type))
     .attr("stroke", "white")
     .attr("stroke-width", 2)
+    .style("cursor", "pointer")
     .on("mouseover", function (event, d) {
-      d3.select(this).attr("opacity", 0.85);
-      tooltip
-        .classed("visible", true)
-        .html(`
-          <strong>${d.data.type}</strong><br />
-          ${d.data.count} outlet (${((d.data.count / total) * 100).toFixed(1)}%)
-        `);
+      d3.select(this).transition().duration(150).attr("d", arcHover);
+      tooltip.classed("visible", true).html(`
+        <div class="tooltip-title">${d.data.type}</div>
+        <div class="tooltip-value">${d.data.count} outlet</div>
+        <div class="tooltip-sub">${Math.round((d.data.count / total) * 100)}% dari total
+      `);
     })
     .on("mousemove", function (event) {
-      tooltip
-        .style("left", `${event.pageX + 14}px`)
-        .style("top", `${event.pageY - 34}px`);
+      tooltip.style("left", `${event.pageX + 14}px`).style("top", `${event.pageY - 34}px`);
     })
     .on("mouseout", function () {
-      d3.select(this).attr("opacity", 1);
+      d3.select(this).transition().duration(150).attr("d", arc);
       tooltip.classed("visible", false);
     });
 
+  // Hanya tampilkan % di dalam slice, tanpa nama
   svg.selectAll(".arc-label")
     .data(pieData)
     .enter()
     .append("text")
     .attr("class", "arc-label")
-    .attr("transform", d => `translate(${labelArc.centroid(d)})`)
+    .attr("transform", d => `translate(${arc.centroid(d)})`)
     .attr("text-anchor", "middle")
     .attr("dy", "0.35em")
-    .text(d => `${d.data.type} (${Math.round((d.data.count / total) * 100)}%)`);
+    .style("fill", "white")
+    .style("font-size", "13px")
+    .style("font-weight", "600")
+    .style("pointer-events", "none")
+    .text(d => {
+      const pct = (d.data.count / total) * 100;
+      return pct >= 8 ? `${Math.round(pct)}%` : "";
+    });
 
-  const legend = d3.select("#legend");
-  legend.selectAll("*").remove();
+  // Legend di kanan
+  data.forEach(d => {
+    const item = document.createElement("div");
+    item.style.display = "flex";
+    item.style.alignItems = "center";
+    item.style.gap = "8px";
+    item.style.fontSize = "13px";
+    item.style.color = "var(--text-primary)";
 
-  const legendItems = legend.selectAll(".legend-item")
-    .data(data)
-    .enter()
-    .append("div")
-    .attr("class", "legend-item");
+    const swatch = document.createElement("span");
+    swatch.style.width = "12px";
+    swatch.style.height = "12px";
+    swatch.style.borderRadius = "3px";
+    swatch.style.background = color(d.type);
+    swatch.style.flexShrink = "0";
 
-  legendItems.append("span")
-    .attr("class", "legend-swatch")
-    .style("background", d => color(d.type));
+    const label = document.createElement("span");
+    const pct = Math.round((d.count / total) * 100);
+    label.textContent = `${d.type} — ${pct}%`;
 
-  legendItems.append("span")
-    .text(d => `${d.type} (${d.count})`);
+    item.appendChild(swatch);
+    item.appendChild(label);
+    legendContainer.appendChild(item);
+  });
 }
 
 function loadCsv(paths) {
@@ -140,15 +154,9 @@ function loadCsv(paths) {
     Outlet_Identifier: d.Outlet_Identifier,
     Outlet_Type: d.Outlet_Type
   });
-
   const tryLoad = i => {
     if (i >= paths.length) return Promise.reject(new Error("CSV tidak ditemukan"));
     return d3.csv(paths[i], parse).catch(() => tryLoad(i + 1));
   };
-
   return tryLoad(0);
-}
-
-function getCssVar(name) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }

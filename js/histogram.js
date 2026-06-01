@@ -1,56 +1,40 @@
+// Kelompok 2 - histogram distribusi harga produk
+
 const DATA_PATHS = [
   "../Data/Dataset_Visdat_Cleaned.csv",
   "../data/Dataset_Visdat_Cleaned.csv"
 ];
 
-let allPrices = [];
+let allPrices      = [];
 let currentBinCount = 20;
 
 loadCsv(DATA_PATHS).then(data => {
-  // Ambil hanya kolom harga produk (Item_MRP)
+
   allPrices = data.map(d => d.Item_MRP).filter(d => !isNaN(d) && d > 0);
-
-  // Render chart pertama kali dengan default 20 bins
   renderChart(allPrices, currentBinCount);
-
-  // Pasang event listener untuk interactive bin size controller
   setupBinControllers();
 
 }).catch(err => {
   console.error("Gagal memuat data:", err);
-  document.getElementById("chart").innerHTML = `
-    <div class="loading">
-      <div class="spinner"></div>
-      Gagal memuat data CSV. Pastikan file Dataset_Visdat_Cleaned.csv berada di folder Data/.
-    </div>
-  `;
+  document.getElementById("chart").innerHTML =
+    `<div class="loading"><div class="spinner"></div>Gagal memuat data CSV.</div>`;
 });
 
 function setupBinControllers() {
-  const binsOptions = [
+  const opts = [
     { id: "btn-bins-10", value: 10 },
     { id: "btn-bins-20", value: 20 },
     { id: "btn-bins-30", value: 30 }
   ];
-
-  binsOptions.forEach(opt => {
+  opts.forEach(opt => {
     const btn = document.getElementById(opt.id);
-    if (btn) {
-      btn.addEventListener("click", () => {
-        // Hapus kelas aktif dari semua tombol
-        binsOptions.forEach(o => {
-          const b = document.getElementById(o.id);
-          if (b) b.classList.remove("active");
-        });
-
-        // Tambah kelas aktif pada tombol yang diklik
-        btn.classList.add("active");
-
-        // Perbarui bin count dan render ulang chart
-        currentBinCount = opt.value;
-        renderChart(allPrices, currentBinCount);
-      });
-    }
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      opts.forEach(o => document.getElementById(o.id)?.classList.remove("active"));
+      btn.classList.add("active");
+      currentBinCount = opt.value;
+      renderChart(allPrices, currentBinCount);
+    });
   });
 }
 
@@ -58,10 +42,10 @@ function renderChart(prices, binCount) {
   const container = document.getElementById("chart");
   container.innerHTML = "";
 
-  const margin = { top: 30, right: 30, bottom: 60, left: 75 };
+  const margin    = { top: 30, right: 30, bottom: 60, left: 75 };
   const fullWidth = container.clientWidth || 900;
-  const width = fullWidth - margin.left - margin.right;
-  const height = 420 - margin.top - margin.bottom;
+  const width     = fullWidth - margin.left - margin.right;
+  const height    = 420 - margin.top - margin.bottom;
 
   const svg = d3.select(container)
     .append("svg")
@@ -70,66 +54,58 @@ function renderChart(prices, binCount) {
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // Skala X (Harga Produk / MRP)
   const xScale = d3.scaleLinear()
-    .domain([0, d3.max(prices) * 1.02]) // Sedikit padding di kanan
+    .domain([0, d3.max(prices) * 1.02])
     .range([0, width])
     .nice();
 
-  // Generator Bin
   const histogram = d3.bin()
     .domain(xScale.domain())
     .thresholds(xScale.ticks(binCount));
 
   const bins = histogram(prices);
 
-  // Skala Y (Frekuensi / Jumlah Produk)
   const yScale = d3.scaleLinear()
-    .domain([0, d3.max(bins, d => d.length) * 1.1]) // Padding 10% di atas agar label aman
+    .domain([0, d3.max(bins, d => d.length) * 1.1])
     .nice()
     .range([height, 0]);
 
-  // Skala Warna Sequential (Menggunakan transisi warna cyan ke biru tua dari style.css)
+  // warna sequential hardcode — tidak pakai getCssVar
   const colorScale = d3.scaleLinear()
     .domain([0, bins.length - 1])
-    .range([getCssVar("--seq-3"), getCssVar("--seq-2")]); // --seq-3 (teal/cyan) ke --seq-2 (biru tua)
+    .range(["#21918c", "#3b528b"]);
 
-  // Grid horizontal
+  // grid
   svg.append("g")
     .attr("class", "grid")
-    .call(
-      d3.axisLeft(yScale)
-        .ticks(6)
-        .tickSize(-width)
-        .tickFormat("")
-    );
+    .call(d3.axisLeft(yScale).ticks(6).tickSize(-width).tickFormat(""));
 
-  // Sumbu X
+  // sumbu x
   svg.append("g")
     .attr("class", "axis")
     .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(xScale).ticks(8).tickFormat(formatRupiahSingkat))
+    .call(d3.axisBottom(xScale).ticks(8).tickFormat(formatRibu))
     .selectAll("text")
-    .style("font-size", "12px")
-    .style("font-weight", "500");
+    .style("font-size", "12px");
 
-  // Sumbu Y
+  // sumbu y
   svg.append("g")
     .attr("class", "axis")
     .call(d3.axisLeft(yScale).ticks(6));
 
-  // Label sumbu Y
+  // label sumbu y
   svg.append("text")
     .attr("x", -height / 2)
-    .attr("y", -margin.left + 22)
+    .attr("y", -margin.left + 15)
     .attr("transform", "rotate(-90)")
     .attr("text-anchor", "middle")
     .attr("fill", "var(--text-secondary)")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
+    .attr("font-family", "var(--font-main)")
     .text("Frekuensi (Jumlah Produk)");
 
-  // Label sumbu X
+  // label sumbu x
   svg.append("text")
     .attr("x", width / 2)
     .attr("y", height + margin.bottom - 15)
@@ -137,26 +113,25 @@ function renderChart(prices, binCount) {
     .attr("fill", "var(--text-secondary)")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
-    .text("Harga Maksimum Produk Eceran (Item MRP)");
+    .attr("font-family", "var(--font-main)")
+    .text("Harga Produk (Ribu IDR)");
 
   const tooltip = d3.select("#tooltip");
 
-  // Gambar Batang Histogram
-  const bars = svg.selectAll(".bar-rect")
+  // batang histogram
+  const bars = svg.selectAll(".bar-hist")
     .data(bins)
     .enter()
     .append("rect")
-    .attr("class", "bar-rect")
+    .attr("class", "bar-hist")
     .attr("x", d => xScale(d.x0) + 1)
     .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1.5))
     .attr("y", height)
     .attr("height", 0)
     .attr("fill", (d, i) => colorScale(i))
-    .attr("rx", 3) // Rounded corner lembut
-    .style("cursor", "pointer")
-    .style("transition", "fill-opacity 0.15s");
+    .attr("rx", 3)
+    .style("cursor", "pointer");
 
-  // Animasi masuk vertikal batang histogram
   bars.transition()
     .duration(850)
     .ease(d3.easeCubicOut)
@@ -164,67 +139,63 @@ function renderChart(prices, binCount) {
     .attr("y", d => yScale(d.length))
     .attr("height", d => height - yScale(d.length));
 
-  // Event Interaktif Tooltip
+  // hover
   bars
-    .on("mouseover", function (event, d) {
+    .on("mouseover", function(event, d) {
       d3.select(this).attr("fill-opacity", 0.8);
-
       tooltip
         .classed("visible", true)
         .html(`
-          <div style="font-weight: 600; margin-bottom: 4px;">Rentang Harga (MRP)</div>
-          <div style="color: var(--accent); font-weight: 600; font-family: var(--font-mono); margin-bottom: 4px;">
-            ${formatRupiahLengkap(d.x0)} - ${formatRupiahLengkap(d.x1)}
-          </div>
-          <div style="font-size: 12px;">Jumlah Produk: <strong>${d.length} item</strong></div>
+          <div style="font-weight:600;margin-bottom:4px">Rentang Harga</div>
+          <div class="tooltip-value">${formatRibuLabel(d.x0)} – ${formatRibuLabel(d.x1)}</div>
+          <div style="font-size:12px;margin-top:4px">Jumlah produk: <strong>${d.length} item</strong></div>
         `);
     })
-    .on("mousemove", function (event) {
+    .on("mousemove", function(event) {
       tooltip
-        .style("left", `${event.pageX + 14}px`)
-        .style("top", `${event.pageY - 36}px`);
+        .style("left", (event.pageX + 14) + "px")
+        .style("top",  (event.pageY - 36) + "px");
     })
-    .on("mouseout", function () {
+    .on("mouseout", function() {
       d3.select(this).attr("fill-opacity", 1);
       tooltip.classed("visible", false);
     });
 
-  // Tulis insight dinamis
-  const maxBin = [...bins].sort((a, b) => b.length - a.length)[0];
-  const percentage = ((maxBin.length / prices.length) * 100).toFixed(1);
-  document.getElementById("insight-box").innerHTML =
-    `Sebagian besar produk retail terkonsentrasi pada kisaran harga <strong>${formatRupiahLengkap(maxBin.x0)} s.d. ${formatRupiahLengkap(maxBin.x1)}</strong>, dengan total frekuensi mencapai <strong>${maxBin.length} item</strong> (sekitar <strong>${percentage}%</strong> dari katalog produk).`;
+  // insight
+  const maxBin    = [...bins].sort((a, b) => b.length - a.length)[0];
+  const persen    = ((maxBin.length / prices.length) * 100).toFixed(1).replace(".", ",");
+  document.getElementById("insight-box").textContent =
+    `Sebagian besar produk memiliki harga di kisaran ${formatRibuLabel(maxBin.x0)}–${formatRibuLabel(maxBin.x1)}, dengan ${maxBin.length} item (${persen}% dari total produk).`;
 }
 
 function loadCsv(paths) {
-  const parse = d => ({
-    Item_MRP: +d.Item_MRP
-  });
-
+  const parse = d => ({ Item_MRP: +d.Item_MRP });
   const tryLoad = i => {
     if (i >= paths.length) return Promise.reject(new Error("CSV tidak ditemukan"));
     return d3.csv(paths[i], parse).catch(() => tryLoad(i + 1));
   };
-
   return tryLoad(0);
 }
 
-function formatRupiahSingkat(angka) {
-  if (angka === 0) return "Rp 0";
+// format sumbu x — singkat tanpa Rp
+function formatRibu(angka) {
+  if (angka === 0) return "0";
   if (angka >= 1_000_000) {
     const val = angka / 1_000_000;
-    return "Rp " + (Number.isInteger(val) ? val.toFixed(0) : val.toFixed(1)) + " Jt";
+    const str = Number.isInteger(val) ? val.toFixed(0) : val.toFixed(1);
+    return str.replace(".", ",") + " Jt";
   }
-  if (angka >= 1_000) {
-    return "Rp " + (angka / 1_000).toFixed(0) + " Rb";
-  }
-  return "Rp " + angka;
+  if (angka >= 1_000) return (angka / 1_000).toFixed(0) + " Rb";
+  return angka.toString();
 }
 
-function formatRupiahLengkap(angka) {
-  return "Rp " + Math.round(angka).toLocaleString("id-ID");
-}
-
-function getCssVar(name) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+// format insight & tooltip
+function formatRibuLabel(angka) {
+  if (angka >= 1_000_000) {
+    const val = angka / 1_000_000;
+    const str = Number.isInteger(val) ? val.toFixed(0) : val.toFixed(1);
+    return str.replace(".", ",") + " Jt IDR";
+  }
+  if (angka >= 1_000) return (angka / 1_000).toFixed(0) + " Rb IDR";
+  return angka + " IDR";
 }

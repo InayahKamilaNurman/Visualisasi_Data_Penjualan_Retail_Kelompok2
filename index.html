@@ -6,6 +6,12 @@
   <title>Dashboard Analisis Penjualan Retail — Kelompok 2</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    /* scatter card sendirian → centered */
+    .dashboard-grid .card-link:last-child:nth-child(3n+1) {
+      grid-column: 2 / 3;
+    }
+  </style>
 </head>
 <body>
 
@@ -25,27 +31,27 @@
   <!-- hero -->
   <header class="page-hero fade-in">
     <span class="badge">Portal Analisis Retail</span>
-    <h1>Visualisasi Data Penjualan Retail & Outlet</h1>
+    <h1>Visualisasi Data Penjualan Retail &amp; Outlet</h1>
     <p>Dashboard interaktif yang menyajikan analisis penjualan berdasarkan tipe item, tipe outlet, lokasi, tren tahunan, dan distribusi harga produk.</p>
   </header>
 
-  <!-- stats — ringkasan dataset -->
+  <!-- stats -->
   <div class="page-wrapper fade-in">
     <div class="stats-row">
       <div class="stat-item">
-        <div id="stat-total-sales" class="stat-value">—</div>
+        <div id="stat-total-sales" class="stat-value">...</div>
         <div class="stat-label">Total Penjualan (Miliar IDR)</div>
       </div>
       <div class="stat-item">
-        <div id="stat-total-items" class="stat-value">—</div>
+        <div id="stat-total-items" class="stat-value">...</div>
         <div class="stat-label">Total Transaksi</div>
       </div>
       <div class="stat-item">
-        <div id="stat-avg-sales" class="stat-value">—</div>
-        <div class="stat-label">Rerata Transaksi (Juta IDR)</div>
+        <div id="stat-avg-sales" class="stat-value">...</div>
+        <div class="stat-label">Rerata per Transaksi (Juta IDR)</div>
       </div>
       <div class="stat-item">
-        <div id="stat-outlet-count" class="stat-value">—</div>
+        <div id="stat-outlet-count" class="stat-value">...</div>
         <div class="stat-label">Outlet Aktif</div>
       </div>
     </div>
@@ -83,12 +89,9 @@
         <p class="card-subtitle">Tren penjualan berdasarkan tahun berdirinya outlet retail.</p>
         <div class="chart-preview" style="display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: var(--radius-md);">
           <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-            <!-- sumbu -->
             <line x1="8" y1="8" x2="8" y2="52" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round"/>
             <line x1="8" y1="52" x2="54" y2="52" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round"/>
-            <!-- garis tren -->
             <polyline points="8,45 18,38 28,40 38,25 48,18" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            <!-- titik -->
             <circle cx="8"  cy="45" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"/>
             <circle cx="18" cy="38" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"/>
             <circle cx="28" cy="40" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"/>
@@ -110,14 +113,28 @@
         <h3 class="card-title">Distribusi Harga Produk</h3>
         <p class="card-subtitle">Sebaran harga produk (Item MRP) dari seluruh dataset.</p>
         <div class="chart-preview" style="display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: var(--radius-md);">
-          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke-width="1.5">
-            <path d="M2 20h20" stroke="var(--border)" stroke-linecap="round" />
-            <rect x="3"    y="14" width="2.5" height="6"  rx="0.5" fill="var(--seq-5)" />
-            <rect x="6.5"  y="10" width="2.5" height="10" rx="0.5" fill="var(--seq-4)" />
-            <rect x="10"   y="5"  width="2.5" height="15" rx="0.5" fill="var(--seq-3)" />
-            <rect x="13.5" y="8"  width="2.5" height="12" rx="0.5" fill="var(--seq-2)" />
-            <rect x="17"   y="13" width="2.5" height="7"  rx="0.5" fill="var(--seq-1)" />
-          </svg>
+          <svg width="60" height="60" viewBox="0 0 60 60">
+          <line x1="5" y1="50" x2="55" y2="50"
+                stroke="var(--border)" stroke-width="1.5"/>
+
+                <rect x="6"  y="20" width="4" height="30" rx="1" fill="#2a9d8f"/>
+                <rect x="10" y="8"  width="4" height="42" rx="1" fill="#2a9d8f"/>
+
+                <rect x="14" y="35" width="4" height="15" rx="1" fill="#3288bd"/>
+                <rect x="18" y="32" width="4" height="18" rx="1" fill="#3288bd"/>
+
+                <rect x="22" y="24" width="4" height="26" rx="1" fill="#3f7cac"/>
+                <rect x="26" y="26" width="4" height="24" rx="1" fill="#3f7cac"/>
+
+                <rect x="30" y="18" width="4" height="32" rx="1" fill="#4575b4"/>
+                <rect x="34" y="15" width="4" height="35" rx="1" fill="#4575b4"/>
+
+                <rect x="38" y="20" width="4" height="30" rx="1" fill="#4c6daf"/>
+                <rect x="42" y="22" width="4" height="28" rx="1" fill="#4c6daf"/>
+
+                <rect x="46" y="30" width="4" height="20" rx="1" fill="#5568aa"/>
+                <rect x="50" y="38" width="4" height="12" rx="1" fill="#5568aa"/>
+        </svg>
         </div>
         <div class="card-footer-link">
           <span>Lihat Visualisasi</span>
@@ -177,16 +194,33 @@
         <h3 class="card-title">Proporsi Tipe Outlet</h3>
         <p class="card-subtitle">Proporsi jumlah outlet berdasarkan tipe outlet.</p>
         <div class="chart-preview" style="display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: var(--radius-md);">
-          <svg width="60" height="60" viewBox="0 0 60 60">
-            <!-- slice 1: 60% biru ~216deg -->
-            <path d="M30 30 L30 5 A25 25 0 1 1 5.1 42.5 Z" fill="var(--cat-1)" />
-            <!-- slice 2: 20% oranye ~72deg -->
-            <path d="M30 30 L5.1 42.5 A25 25 0 0 1 17.5 7.8 Z" fill="var(--cat-2)" />
-            <!-- slice 3: 10% hijau ~36deg -->
-            <path d="M30 30 L17.5 7.8 A25 25 0 0 1 30 5 Z" fill="var(--cat-3)" />
-            <!-- lubang tengah donut -->
-            <circle cx="30" cy="30" r="11" fill="var(--bg)" />
-          </svg>
+          <!-- donut: r=25, circumference=157.08. Segmen: 60% cat-1, 25% cat-2, 15% cat-3 -->
+          <!-- stroke-dashoffset dimulai dari atas (-39.27 = -circumference/4) -->
+         <svg width="60" height="60" viewBox="0 0 60 60">
+          <!-- biru 60% -->
+          <path d="M30,30 L30,5
+          A25,25 0 1,1 15.3,50.2
+          Z"
+          fill="var(--cat-1)"/>
+
+          <!-- oranye 20% -->
+          <path d="M30,30 L15.3,50.2
+          A25,25 0 0,1 5.6,22.3
+          Z"
+          fill="var(--cat-2)"/>
+
+          <!-- hijau 10% -->
+          <path d="M30,30 L5.6,22.3
+          A25,25 0 0,1 15.3,9.8
+          Z"
+         fill="var(--cat-3)"/>
+
+         <!-- ungu 10% -->
+          <path d="M30,30 L15.3,9.8
+          A25,25 0 0,1 30,5
+          Z"
+          fill="var(--cat-4)"/>
+        </svg>
         </div>
         <div class="card-footer-link">
           <span>Lihat Visualisasi</span>
@@ -195,7 +229,7 @@
       </article>
     </a>
 
-    <!-- scatter plot -->
+    <!-- scatter plot — card ke-7, sendirian di baris terakhir → centered via CSS -->
     <a class="card-link" href="pages/scatter_plot.html">
       <article class="card">
         <span class="badge" style="background: var(--accent-light); color: var(--accent);">Scatter Plot</span>

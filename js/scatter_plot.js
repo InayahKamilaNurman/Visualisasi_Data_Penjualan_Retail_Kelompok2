@@ -15,18 +15,16 @@ loadCsv(DATA_PATHS).then(data => {
     }));
 
   const corrValue = correlation(chartData);
-
   renderChart(chartData);
 
+  const corrFormatted = corrValue.toFixed(2).replace(".", ",");
   document.getElementById("insight-box").textContent =
-    `Hubungan antara harga produk dan total penjualan bersifat positif dengan korelasi ${corrValue.toFixed(2)}.`;
+    `Hubungan antara harga produk dan total penjualan bersifat positif dengan korelasi ${corrFormatted}.`;
+
 }).catch(err => {
   console.error(err);
   document.getElementById("chart").innerHTML = `
-    <div class="loading">
-      <div class="spinner"></div>
-      Gagal memuat data CSV.
-    </div>
+    <div class="loading"><div class="spinner"></div>Gagal memuat data CSV.</div>
   `;
 });
 
@@ -56,6 +54,7 @@ function renderChart(data) {
     .nice()
     .range([height, 0]);
 
+  // Grid
   svg.append("g")
     .attr("class", "grid")
     .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
@@ -65,10 +64,11 @@ function renderChart(data) {
     .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).tickSize(-height).tickFormat(""));
 
+  // Sumbu X — pakai Juta IDR biar angkanya kecil dan rapi
   svg.append("g")
     .attr("class", "axis")
     .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x).tickFormat(formatRibu));
+    .call(d3.axisBottom(x).ticks(8).tickFormat(formatJuta));
 
   svg.append("text")
     .attr("x", width / 2)
@@ -76,8 +76,9 @@ function renderChart(data) {
     .attr("text-anchor", "middle")
     .attr("fill", "var(--text-secondary)")
     .attr("font-size", "12px")
-    .text("Harga Produk (Ribu IDR)");
+    .text("Harga Produk (Juta IDR)");
 
+  // Sumbu Y
   svg.append("g")
     .attr("class", "axis")
     .call(d3.axisLeft(y).tickFormat(formatJuta));
@@ -91,6 +92,28 @@ function renderChart(data) {
     .attr("font-size", "12px")
     .text("Total Penjualan (Juta IDR)");
 
+  // Trendline (regresi linear)
+  const n = data.length;
+  const meanX = d3.mean(data, d => d.mrp);
+  const meanY = d3.mean(data, d => d.sales);
+  const slope = d3.sum(data, d => (d.mrp - meanX) * (d.sales - meanY)) /
+                d3.sum(data, d => Math.pow(d.mrp - meanX, 2));
+  const intercept = meanY - slope * meanX;
+
+  const xMin = d3.min(data, d => d.mrp);
+  const xMax = d3.max(data, d => d.mrp);
+
+  svg.append("line")
+    .attr("x1", x(xMin))
+    .attr("y1", y(slope * xMin + intercept))
+    .attr("x2", x(xMax))
+    .attr("y2", y(slope * xMax + intercept))
+    .attr("stroke", "#f97316")
+    .attr("stroke-width", 2)
+    .attr("stroke-dasharray", "6,4")
+    .attr("opacity", 0.8);
+
+  // Dots
   const tooltip = d3.select("#tooltip");
 
   svg.append("g")
@@ -102,17 +125,16 @@ function renderChart(data) {
     .attr("cx", d => x(d.mrp))
     .attr("cy", d => y(d.sales))
     .attr("r", 3.2)
-    .attr("fill", "var(--primary)")
-    .attr("fill-opacity", 0.55)
+    .attr("fill", "#1a56db")
+    .attr("fill-opacity", 0.45)
     .on("mouseover", function (event, d) {
       d3.select(this).attr("r", 6).attr("fill-opacity", 1);
       tooltip
         .classed("visible", true)
         .html(`
-          <strong>${d.itemType}</strong><br />
-          Harga: ${formatRibu(d.mrp)}<br />
-          Penjualan: ${formatJuta(d.sales)}<br />
-          Outlet: ${d.outletType}
+          <div class="tooltip-title">${d.itemType}</div>
+          <div class="tooltip-value">Penjualan: ${formatJutaLabel(d.sales)}</div>
+          <div class="tooltip-sub">Harga: ${formatJutaLabel(d.mrp)} &nbsp;|&nbsp; ${d.outletType}</div>
         `);
     })
     .on("mousemove", function (event) {
@@ -121,7 +143,7 @@ function renderChart(data) {
         .style("top", `${event.pageY - 34}px`);
     })
     .on("mouseout", function () {
-      d3.select(this).attr("r", 3.2).attr("fill-opacity", 0.55);
+      d3.select(this).attr("r", 3.2).attr("fill-opacity", 0.45);
       tooltip.classed("visible", false);
     });
 }
@@ -134,12 +156,10 @@ function loadCsv(paths) {
     Outlet_Type: d.Outlet_Type,
     Outlet_Identifier: d.Outlet_Identifier
   });
-
   const tryLoad = i => {
     if (i >= paths.length) return Promise.reject(new Error("CSV tidak ditemukan"));
     return d3.csv(paths[i], parse).catch(() => tryLoad(i + 1));
   };
-
   return tryLoad(0);
 }
 
@@ -152,14 +172,18 @@ function correlation(data) {
   return num / (denX * denY);
 }
 
+// Untuk sumbu — singkat
 function formatJuta(angka) {
   if (angka === 0) return "0";
   const val = angka / 1_000_000;
-  return (Number.isInteger(val) ? val.toFixed(0) : val.toFixed(1)) + " Jt";
+  const str = Number.isInteger(val) ? val.toFixed(0) : val.toFixed(1);
+  return str.replace(".", ",") + " Jt";
 }
 
-function formatRibu(angka) {
+// Untuk tooltip — dengan satuan lengkap
+function formatJutaLabel(angka) {
   if (angka === 0) return "0";
-  const val = angka / 1_000;
-  return (Number.isInteger(val) ? val.toFixed(0) : val.toFixed(1)) + " Rb";
+  const val = angka / 1_000_000;
+  const str = (Math.round(val * 10) / 10).toFixed(1).replace(".", ",");
+  return str + " Juta IDR";
 }

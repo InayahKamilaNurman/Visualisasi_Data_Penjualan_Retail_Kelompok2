@@ -1,3 +1,5 @@
+// Kelompok 2 - bar chart tipe item
+
 const DATA_PATH = "../Data/Dataset_Visdat_Cleaned.csv";
 
 let showTop5 = false;
@@ -45,7 +47,6 @@ d3.csv(DATA_PATH, d => ({
   document.getElementById("chart").innerHTML =
     `<p style="color:red;padding:20px">Gagal memuat data. Pastikan file CSV ada di folder Data/.</p>`;
 });
-
 
 // render chart
 function renderChart(data) {
@@ -108,7 +109,7 @@ function renderChart(data) {
       .attr("dy", "0.5em");
   }
 
-  // sumbu y — pakai Miliar
+  // sumbu y
   svg.append("g")
     .attr("class", "axis y-axis")
     .call(
@@ -158,7 +159,7 @@ function renderChart(data) {
         .classed("visible", true)
         .html(`
           <div style="font-weight:600;margin-bottom:4px">${d.type}</div>
-          <div class="tooltip-value">${formatMiliar(d.total)} Miliar IDR</div>
+          <div class="tooltip-value">${formatMiliarLabel(d.total)}</div>
         `);
     })
     .on("mousemove", function(event) {
@@ -177,9 +178,18 @@ function renderChart(data) {
     `${top1.type} adalah tipe item dengan penjualan tertinggi.`;
 }
 
-// format miliar
+// format sumbu y
 function formatMiliar(angka) {
   if (angka === 0) return "0";
   const val = angka / 1_000_000_000;
-  return (Number.isInteger(val) ? val.toFixed(0) : val.toFixed(1)) + " M";
+  return (Number.isInteger(Math.round(val * 10) / 10)
+    ? val.toFixed(0)
+    : val.toFixed(1)) + " M";
+}
+
+// format tooltip — koma Indonesia, tidak ada ,0
+function formatMiliarLabel(angka) {
+  const val = Math.round((angka / 1_000_000_000) * 10) / 10;
+  const str = Number.isInteger(val) ? val.toFixed(0) : val.toFixed(1).replace(".", ",");
+  return str + " Miliar IDR";
 }
