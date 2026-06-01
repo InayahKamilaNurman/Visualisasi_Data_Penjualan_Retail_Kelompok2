@@ -64,10 +64,15 @@
         <p class="card-subtitle">Menganalisis performa finansial berdasarkan klasifikasi tingkat lokasi wilayah (Tier 1, Tier 2, Tier 3).</p>
         <div class="chart-preview" style="display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: var(--radius-md);">
           <!-- Custom SVG Icon Representative of Bar Chart Location -->
-          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5">
-            <path d="M12 2a8 8 0 00-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 00-8-8z" />
-            <circle cx="12" cy="10" r="3" />
-            <path d="M6 22h12" stroke-dasharray="2 2" />
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+            <path d="M2 20h20" stroke="var(--border)" stroke-linecap="round" />
+            <rect x="4" y="11" width="4" height="9" rx="1" fill="var(--cat-1)" stroke="var(--cat-1)" />
+            <rect x="10" y="7" width="4" height="13" rx="1" fill="var(--cat-2)" stroke="var(--cat-2)" />
+            <rect x="16" y="4" width="4" height="16" rx="1" fill="var(--cat-3)" stroke="var(--cat-3)" />
+            <g transform="translate(14.5, -2) scale(0.3)" stroke="var(--accent)" stroke-width="3" fill="var(--accent-light)">
+              <path d="M12 2a8 8 0 00-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 00-8-8z" />
+              <circle cx="12" cy="10" r="3" fill="var(--accent)" />
+            </g>
           </svg>
         </div>
         <div class="card-footer-link">
@@ -107,12 +112,14 @@
         <h3 class="card-title">Distribusi Harga Produk (MRP)</h3>
         <p class="card-subtitle">Melihat kerapatan dan penyebaran harga eceran maksimum dari seluruh katalog produk eceran.</p>
         <div class="chart-preview" style="display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: var(--radius-md);">
-          <!-- Custom SVG Icon Representative of Histogram -->
-          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5">
-            <rect x="3" y="14" width="4" height="6" rx="1" />
-            <rect x="9" y="6" width="4" height="14" rx="1" fill="var(--primary-light)" />
-            <rect x="15" y="10" width="4" height="10" rx="1" />
-            <path d="M3 21h18" stroke-linecap="round" />
+          <!-- Custom SVG Icon Representative of Histogram (Bell Curve) -->
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+            <path d="M2 20h20" stroke="var(--border)" stroke-linecap="round" />
+            <rect x="3" y="14" width="2.5" height="6" rx="0.5" fill="var(--seq-4)" stroke="var(--seq-4)" />
+            <rect x="6.5" y="10" width="2.5" height="10" rx="0.5" fill="var(--seq-3)" stroke="var(--seq-3)" />
+            <rect x="10" y="5" width="2.5" height="15" rx="0.5" fill="var(--seq-2)" stroke="var(--seq-2)" />
+            <rect x="13.5" y="8" width="2.5" height="12" rx="0.5" fill="var(--seq-3)" stroke="var(--seq-3)" />
+            <rect x="17" y="13" width="2.5" height="7" rx="0.5" fill="var(--seq-4)" stroke="var(--seq-4)" />
           </svg>
         </div>
         <div class="card-footer-link">
@@ -129,12 +136,13 @@
         <h3 class="card-title">Penjualan per Tipe Item</h3>
         <p class="card-subtitle">Menampilkan total nominal penjualan produk yang dikelompokkan berdasarkan rumpun tipe kategori produk.</p>
         <div class="chart-preview" style="display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: var(--radius-md);">
-          <!-- Custom SVG Icon Representative of Bar Chart Item -->
-          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5">
-            <rect x="4" y="4" width="4" height="16" rx="1" />
-            <rect x="10" y="8" width="4" height="12" rx="1" />
-            <rect x="16" y="11" width="4" height="9" rx="1" />
-            <path d="M2 20h20" stroke-linecap="round" />
+          <!-- Custom SVG Icon Representative of Bar Chart Item (Horizontal Ranking) -->
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+            <path d="M4 2v18" stroke="var(--border)" stroke-linecap="round" />
+            <path d="M4 20h18" stroke="var(--border)" stroke-linecap="round" />
+            <rect x="4" y="4" width="15" height="3" rx="0.5" fill="var(--primary)" stroke="var(--primary)" />
+            <rect x="4" y="9" width="11" height="3" rx="0.5" fill="var(--primary-dark)" stroke="var(--primary-dark)" />
+            <rect x="4" y="14" width="7" height="3" rx="0.5" fill="var(--accent)" stroke="var(--accent)" />
           </svg>
         </div>
         <div class="card-footer-link">
